@@ -27,3 +27,80 @@
 ### 1. 安装依赖
 ```bash
 npm install
+
+2. 配置环境变量
+复制根目录下的 .env.example 为 .env，并填入你的 DeepSeek API Key：
+
+env
+DEEPSEEK_API_KEY=sk-你的真实API_KEY
+DEEPSEEK_MODEL=deepseek-chat
+DEEPSEEK_TEMPERATURE=0.7
+
+(注意：请勿将包含真实 Key 的 .env 文件提交至 Git)
+
+3. 编译并启动
+bash
+# 编译 TypeScript
+npm run build
+
+# 启动交互式智能体
+npm run dev
+
+🎮 交互指令
+启动后，你可以在终端直接输入自然语言与智能体对话，同时支持以下特殊指令：
+
+exit：退出智能体
+
+clear：清空当前对话历史（让 AI 失忆）
+
+files：查看 output/ 目录下 AI 生成的所有文件
+
+📂 项目架构
+
+├── dw/
+│   └── skills/          # Markdown 技能定义文件 (如写诗、代码评审等)
+├── src/
+│   ├── agent.ts         # 智能体核心类 (调度大模型、历史管理、文件解析)
+│   ├── sandbox.ts       # 安全沙箱 (文件路径隔离与读写控制)
+│   ├── hitl.ts          # 人工确认机制 (高危指令拦截)
+│   ├── skill-loader.ts  # 技能加载器 (解析 Markdown 并拼接 Prompt)
+│   └── index.ts         # 命令行主入口 (交互式循环)
+├── output/              # AI 生成的最终文件存放处 (沙箱区域)
+├── .env                 # 环境变量 (不提交至仓库)
+├── tsup.config.ts       # 构建配置
+└── tsconfig.json        # TypeScript 配置
+
+🧩 扩展玩法
+
+自定义技能
+只需在 dw/skills/ 目录下新建一个 .skill.md 文件，按照格式编写 name、description 和执行指南，Agent 重启后即可自动学会新技能，无需改动任何核心代码。
+
+切换大模型
+得益于 OpenAI SDK 的兼容性，只需修改 .env 中的 DEEPSEEK_MODEL 或在 src/agent.ts 中修改 baseURL，即可无缝切换至通义千问、Kimi (Moonshot)、本地 Ollama 等任何兼容 OpenAI 接口的模型。
+
+📝 开发心得与踩坑记录
+ESM 规范踩坑：Node.js 开启 "type": "module" 后，本地引入 TypeScript 模块必须在相对路径后加上 
+.js
+ 后缀（如 
+import { Agent } from './agent.js'
+），否则编译后会报错 ERR_MODULE_NOT_FOUND。
+
+Windows 换行符兼容：在解析 Markdown 技能文件的 Frontmatter 时，Windows 默认的 \r\n 换行符会导致严格的正则匹配（仅匹配 \n）失败。在正则表达式中加入 \r? 即可完美兼容跨平台。
+
+OpenAI SDK 与 DeepSeek 的兼容：将 baseURL 指定为 
+https://api.deepseek.com/v1
+ 后，可直接使用 OpenAI 的 SDK 和流式方法，业务代码完全不用动。
+
+
+***
+
+### 🎯 后续操作步骤：
+
+1. 把上面这段内容完整复制。
+2. 打开你项目里的 `README.md` 文件（或者在 GitHub 网页上直接点击 README 旁边的铅笔图标进行编辑）。
+3. 粘贴进去并保存。
+4. 在终端执行：
+   ```bash
+   git add README.md
+   git commit -m "docs: 完善项目 README，增加架构说明与开发心得"
+   git push origin main
