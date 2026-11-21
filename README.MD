@@ -1,53 +1,29 @@
-🚀 第一步：创建项目并初始化
+# 🤖 OpenCodex - 通用型 AI 智能体 (AI Agent)
 
-# 1. 创建项目文件夹并进入
-mkdir dw-deep-agent-demo
-cd dw-deep-agent-demo
+基于 **TypeScript + Node.js + DeepSeek API** 从零到一实现的通用型 AI 智能体，对标 OpenAI Codex / Claude Code 的核心产品形态。
 
-# 2. 初始化 package.json
-npm init -y
+> **核心亮点**：不是简单的 API 套壳，而是从底层架构出发，完整实现了智能体的六层架构、动态 Skill 技能加载、安全沙箱隔离、HITL 人类参与机制以及多智能体协作，具备企业级生产环境的健壮性处理。
 
+## ✨ 核心特性
 
-# 3. 安装核心依赖
-我们要用 TypeScript 和 Node 环境，并且用官方的 openai SDK 去调用 DeepSeek。
-npm install openai dotenv fs-extra
-npm install -D typescript @types/node @types/fs-extra tsup
+- 🧠 **动态技能体系 (Skill System)**：采用 Markdown 文件定义技能，Agent 启动时自动扫描并注入 System Prompt，大模型根据用户意图按需、动态触发对应技能，实现“零代码”扩展能力。
+- 🛡️ **安全沙箱隔离 (Sandbox)**：不依赖重量级的底层 VM，而是通过严格的文件路径校验（`path.resolve` 与 `startsWith`），限制 AI 仅能在 `output/` 目录内进行读写操作，彻底杜绝路径穿越（Path Traversal）越权风险。
+- 🚦 **人类参与机制 (HITL)**：Human-in-the-Loop，在调用大模型前和写入文件前进行高危指令拦截（如 `rm -rf`, `drop table` 等），通过 Node `readline` 阻塞式等待人类确认（y/n），保障系统绝对安全。
+- 🔄 **流式交互体验 (Streaming)**：基于 Server-Sent Events (SSE) 实现打字机级的流式输出，大幅提升终端交互体验。
+- 📁 **文件自动解析与写入**：通过约定 ` ```filename:xxx.md ` 的 Markdown 格式，Agent 自动解析大模型回复并提权执行文件落盘，实现从“聊天”到“执行”的闭环。
+- 💾 **多轮记忆管理**：内置 `conversationHistory` 上下文管理，支持持久化多轮对话；并提供 `clear` 指令一键清空记忆，开启全新会话。
+- 🤝 **多智能体协作 (Multi-Agent)**：支持将复杂任务拆分，多个独立职能的子智能体（如 Researcher / Analyst）基于 `Promise.all` 并发执行，最终由主智能体汇总。
 
-# 4. 建立骨架目录
+## 🛠️ 技术栈
 
-# (1). 先创建 src 和 dw 和 output 这三个主目录
-mkdir src, dw, output
+- **语言**: TypeScript (ESM 模块规范)
+- **运行时**: Node.js (>=20)
+- **大模型底座**: DeepSeek (基于 OpenAI SDK 无缝兼容接入)
+- **构建工具**: tsup (极速构建)
+- **核心依赖**: `openai`, `dotenv`, `fs-extra`
 
-# (2). 进入 dw 目录
-cd dw
+## 🚀 快速开始
 
-# (3). 在 dw 里面创建 skills 目录
-mkdir skills
-
-此时请敲一下 cd .. 退回到根目录（也就是 dw-deep-agent-demo）
-如果你觉得来回切换目录麻烦，也可以直接用这行代码（推荐直接复制）：
-New-Item -ItemType Directory -Force -Path src, dw/skills, output
-
----------------------------------------------------------------------------------------
-
-第二步：配置文件与环境变量准备。
-
-这一步非常关键，它不仅决定了你的项目能不能顺利编译运行，还关系到你的 API Key 安不安全（千万别把 Key 传到 GitHub 上）
-# 1. 配置 package.json
-# 2. 配置 tsconfig.json(TypeScript 的语法规则)
-# 3. 配置 tsup.config.ts(打包工具)
-# 4. 创建环境变量与 .gitignore（重点！）
-① 创建 .gitignore（根目录新建）[文件告诉 Git 千万不要把你的密钥传上去]
-② 创建 .env[这是你本地存放密钥的地方。你需要先去 DeepSeek 官网（platform.deepseek.com）注册申请一个 API Key。]
-③ 创建 .env.example[给别人看的模板，里面不写真实 Key]
-④ 创建 output/.gitkeep [防止上传后目录结构丢失]
-
----------------------------------------------------------------------------------------
-
-第三步：构建项目的“基建模块”
-
-🛡️ 第1步：实现沙箱模块 (sandbox.ts)
-沙箱的作用是：限制 AI 只能往 output 文件夹里写代码，绝对不能让它碰到你电脑上的其他文件。
-🧪 测试沙箱[需要验证一下它是不是真的能拦住 AI 越界操作]
-
-
+### 1. 安装依赖
+```bash
+npm install
