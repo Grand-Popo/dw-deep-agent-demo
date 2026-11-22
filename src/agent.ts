@@ -141,6 +141,38 @@ ${skillPrompt}
     }
 
     /**
+     * 普通对话 (非流式，用于后台静默执行)
+     */
+    async invoke(userMessage: string): Promise<{ content: string; files: string[] }> {
+        // 1. 检查高危操作
+        const approved = await this.hitl.checkPoint(userMessage);
+        if (!approved) {
+            return { content: "【操作已被用户取消】", files: [] };
+        }
+
+        // 2. 记录用户消息
+        this.conversationHistory.push({ role: "user", content: userMessage });
+
+        // 3. 发起请求（注意这里没有 stream: true）
+        const response = await this.client.chat.completions.create({
+            model: this.config.model,
+            messages: [
+                { role: "system", content: this.buildSystemPrompt() },
+                ...this.conversationHistory,
+            ],
+        });
+
+        // 4. 获取回复并记录
+        const assistantContent = response.choices[0].message.content || "";
+        this.conversationHistory.push({ role: "assistant", content: assistantContent });
+
+        // 5. 处理文件写入
+        const files = await this.processFileOperations(assistantContent);
+
+        return { content: assistantContent, files };
+    }
+
+    /**
      * 清空对话历史
      */
     clearHistory() {
